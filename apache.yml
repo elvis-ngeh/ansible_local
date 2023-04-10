@@ -1,0 +1,24 @@
+- hosts: db                     #play 1          #define where u want to run ur tasks like on what group of hosts
+  become: true                                   # permission to run this tasks 
+  tasks:                                         # task is a dictionary which comes with a list 
+  - name: install apache                         # name of the task & what it does  note in this case we have 3 tasks in this play 
+    yum:  name=httpd state=present               # The module (command) 
+  - name:  start apache                          # next task is to start the service installed 
+    service: name=httpd state=started            # module and how it will be started 
+  - name:  copy index file                       # last task on this play 
+    copy:                                        # copy module 
+      src:  /home/ansible/index.html             # specifying the source where file is copied from with "src"
+      dest:  /var/www/index.html                 # destination is where file is copied to on ansible node or worker 
+- hosts: all                          #play 2 
+  tasks:                                         # what tasks will this play be exercuting 
+  - name: install git                            # task will be to instll git under task name 
+    package:
+      name:  present                             # after installing git is started by the option "present"
+      state: present                             # state present will ensure git is initiated or started ,note use line 7 command 
+- hosts:  localhost                  # play 3 
+  tasks:
+  - name:  check system resources 
+    shell:  df -h 
+    
+  # block and rescue  are used to keep an ansible play running even if a task fails in one of plays 
+

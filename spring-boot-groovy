@@ -1,0 +1,48 @@
+node{
+    def mavenhome = tool name : 'maven3.8.7'
+    stage('SCM Clone'){
+        sh " echo ' clone java code from SCM' "
+       git 'https://github.com/elvis-ngeh/spring-boot-docker'
+    }
+
+    stage('MavenBuild'){
+        sh "echo 'maven Build job' "
+        sh '${mavenhome}/bin/mvn clean package'
+
+    }
+
+    stage('SonarqubeReport'){
+       // sh "echo 'analysing code quality' "
+       // sh '${mavenhome}/bin/mvn sonar:sonar'
+    }
+
+    stage('Upload2Nexus'){
+        //sh"echo' creating artifactoy backup' "
+        //sh '${mavenhome}/bin/mvn deploy'
+    }
+
+    stage('BuildDockerImage '){
+        sh "echo 'Build a docker image now' "
+        sh "docker build -t elvdocker/spring-boot-mongo ."
+    }
+    stage('PushImage2Reg'){
+        withCredentials([string(credentialsId: 'DockerHubCreds', variable: 'DockerHubCreds')]) {
+        sh 'docker login -u elvdocker -p ${DockerHubCreds}'
+         sh 'docker push elvdocker/spring-boot-mongo'
+        }
+        
+}
+
+stage('RemoveImages'){
+    sh 'docker rmi $(docker images -q)'
+}
+
+stage('Deploy2Kubernetes'){
+sh 'kubectl apply -f springapp.yml'
+}
+stage('DeleteOldBuilds'){
+    
+}
+       
+
+    }

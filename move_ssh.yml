@@ -1,0 +1,38 @@
+---
+- name: Create SSH key and disable password authentication
+  hosts: web
+  become: true
+
+  tasks:
+    # Install ssh-keygen if it's not already installed
+    - name: Install ssh-keygen
+      apt:
+        name: openssh-client
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Create an SSH key using ssh-keygen
+    - name: Create SSH key
+      command: ssh-keygen -t rsa -b 4096 -f /home/{{ ec2-user }}/.ssh/id_rsa -N ''
+
+    # Copy the public key to the remote hosts
+    - name: Copy public key to remote hosts
+      authorized_key:
+        user: "{{ ec2-user }}"
+        key: "{{ lookup('file', '/home/{{ ansible_user }}/.ssh/id_rsa.pub') }}"
+
+    # Disable password authentication on the remote hosts
+    - name: Disable password authentication
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+      notify: restart sshd
+      become: true
+
+  handlers:
+    # Restart the sshd service when the sshd_config file is modified
+    - name: restart sshd
+      service:
+        name: sshd
+        state: restarted

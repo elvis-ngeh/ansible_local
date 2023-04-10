@@ -1,0 +1,10 @@
+- hosts: web
+  become: true
+  tasks: 
+  - name:  Install list of packages  # use a "condition " to install a list 
+    package: 
+      name: ['nano','wget','vim','zip','unzip']  # add everything you intend to instll using curly bracket quatation
+      state: present
+    when:  ("ansible_distrubution" == "RedHat")  # add a condition as you may need code deploy from multiple flavors 
+           
+

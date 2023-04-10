@@ -1,0 +1,27 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: Generate SSH key
+      command: ssh-keygen -t rsa -b 4096 -N '' -f "{{ ansible_env.HOME }}/.ssh/id_rsa"
+
+    - name: copy ssh keys
+      vars:
+        ssh: "{{ ansible_env.HOME }}/.ssh/id_rsa.pub"
+        sshkeydest: "buffer/{{ ansible_user }}-id_rsa.pub"
+      copy:
+        src: "{{ ssh }}"
+        dest: "{{ sshkeydest }}"
+        flat: yes
+
+    - name: Disable Password Authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: "PasswordAuthentication no"
+        state: present
+        backup: yes
+
+    - name: restart ssh
+      service:
+        name: sshd
+        state: restarted

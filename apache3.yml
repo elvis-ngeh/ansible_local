@@ -1,0 +1,18 @@
+- hosts: app
+  become: true
+  tasks:
+  - name: install apache 
+    yum: name=httpd state=latest
+    notify:
+    - start apache
+    ignore_errors: true
+  - name: copy index.html
+    template: src-app/index.html dest=/var/www/html
+  - name: dynamic content
+    debug:
+      msg: "{{index}}"
+  handlers:
+  - name: start apache
+    service: name=httpd state=started
+index.html
+<p1> Welcome to LandmarkTechnology  </p1>

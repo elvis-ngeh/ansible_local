@@ -1,0 +1,28 @@
+-  hosts: dev
+   become: true
+   vars:
+   tasks:
+   -  name: install httpd
+      yum: name=httpd state=present
+   -  name: start apache 
+      service: name=httpd state=started
+   -  name: copy index file
+      ignore_errors: true
+   -  enable password authentication
+      copy: src= dest=
+      notify 
+      - restart sshd
+   -  name: change the default port for apache
+      copy: src= dest=
+      notify:
+      - restart apache
+   handlers:
+     name: restart apache
+     systemd: name-httpd start=restarted 
+   - name: restart sshd
+     service:
+       name: sshd
+       state: restarted
+
+    
+     
